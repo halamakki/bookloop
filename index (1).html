@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BookLoop بوك لوب</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Fraunces:ital,wght@0,500;0,600;1,400&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<style>
+/* Layout: bilingual (RTL/LTR) "open book" spreads — a narrow heading page beside a wide content page; deep wine bands break the ivory paper; teal-green marks everything about trust and success. */
+:root{
+  --bg:#FBF7F1; --surface:#FFFFFF; --panel:#F4ECDF; --line:#E6DAC6;
+  --ink:#2B1B1F; --heading:#671A30; --muted:#6F5E58;
+  --gold:#C4923C; --gold-ink:#86591B;
+  --trust:#2C6A5B; --trust-soft:#E3EFEA; --on-trust:#FFFFFF;
+  --btn-bg:#671A30; --btn-fg:#FFF8EE;
+  --shadow:0 1px 2px rgba(74,16,35,.06),0 8px 24px rgba(74,16,35,.07);
+  --wine:#4A1023; --wine-deep:#2B0914; --wine-2:#6E2139; --wine-glow:#7E2743;
+  --on-wine:#FBF3E7; --on-wine-muted:#E3D0C4; --on-wine-gold:#E0B36C;
+  --c1:#671A30; --c2:#2C6A5B; --c3:#23405E; --c4:#8A5A16; --c5:#4B2A5A; --on-cover:#FBF3E7;
+  --display-ar:"Amiri","Noto Naskh Arabic","Traditional Arabic",Georgia,serif;
+  --display-en:"Fraunces",Georgia,"Times New Roman",serif;
+  --body:"IBM Plex Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#170A0E; --surface:#241118; --panel:#2D1620; --line:#47242F;
+    --ink:#EFE4D8; --heading:#F6E9D8; --muted:#BDA79B;
+    --gold:#D9A75C; --gold-ink:#E0B36C;
+    --trust:#7FC2AD; --trust-soft:#17302A; --on-trust:#0E221D;
+    --btn-bg:#E0B36C; --btn-fg:#2B0914;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.28);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#170A0E; --surface:#241118; --panel:#2D1620; --line:#47242F;
+  --ink:#EFE4D8; --heading:#F6E9D8; --muted:#BDA79B;
+  --gold:#D9A75C; --gold-ink:#E0B36C;
+  --trust:#7FC2AD; --trust-soft:#17302A; --on-trust:#0E221D;
+  --btn-bg:#E0B36C; --btn-fg:#2B0914;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.28);
+  color-scheme:dark;
+}
+
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink)}
+[hidden]{display:none!important}
+.site{--display:var(--display-ar);font-family:var(--body);font-size:17px;line-height:1.9;text-align:start}
+.site[lang="en"]{--display:var(--display-en);line-height:1.7}
+.site *{box-sizing:border-box}
+.site [id]{scroll-margin-top:84px}
+.wrap{max-width:1140px;margin-inline:auto;padding-inline:clamp(16px,4vw,40px)}
+h1,h2,h3,p,ul,ol,dl,dd{margin:0}
+ul,ol{padding:0;list-style:none}
+h1,h2,h3{font-family:var(--display);font-weight:700;color:var(--heading);line-height:1.35;text-wrap:balance}
+.site[lang="en"] h1,.site[lang="en"] h2,.site[lang="en"] h3{font-weight:600;line-height:1.2;letter-spacing:-.01em}
+h2{font-size:clamp(1.9rem,4vw,2.7rem)}
+h3{font-size:1.3rem}
+.site[lang="en"] h3{font-size:1.15rem}
+.eyebrow{font-family:var(--display-en);font-style:italic;color:var(--gold-ink);font-size:1rem}
+.site[lang="en"] .eyebrow{font-family:var(--display-ar);font-style:normal;font-size:1.15rem;line-height:1.5}
+.muted{color:var(--muted)}
+.lede{font-size:1.1rem;max-width:34em}
+.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* header */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--bg);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:16px;min-height:64px;position:relative}
+.brand{display:flex;align-items:baseline;gap:8px;text-decoration:none;font:600 1.3rem/1 var(--display-en);color:var(--heading);white-space:nowrap}
+.brand span{font:700 1.15rem/1 var(--display-ar);color:var(--gold-ink)}
+.nav ul{display:flex;gap:4px;flex:1;min-width:0;justify-content:center}
+.nav ul a{color:var(--muted);text-decoration:none;font-size:.93rem;white-space:nowrap;padding:8px 10px;border-radius:8px;display:block;line-height:1.4}
+.nav ul a:hover{color:var(--heading);background:var(--panel)}
+.nav ul a[aria-current]{color:var(--heading);font-weight:600;box-shadow:inset 0 -2px 0 var(--gold)}
+.tool{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 .9rem/1 var(--body);cursor:pointer}
+.tool:hover{border-color:var(--gold)}
+.tool .ic{width:18px;height:18px}
+#menu-btn{display:none;padding:0 10px}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;font:600 .98rem/1.3 var(--body);padding:.6em 1.4em;border-radius:8px;border:1px solid transparent;text-decoration:none;cursor:pointer;transition:transform .15s,filter .15s}
+.btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn:active{transform:none}
+.btn-main{background:var(--btn-bg);color:var(--btn-fg)}
+.btn-quiet{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn-gold{background:var(--on-wine-gold);color:var(--wine-deep)}
+.btn-ghost{background:transparent;color:var(--on-wine);border-color:var(--on-wine-gold)}
+.nav .btn{min-height:40px;padding:0 1.1em;font-size:.9rem;white-space:nowrap}
+
+/* wine bands */
+.band{background:linear-gradient(160deg,var(--wine),var(--wine-deep));color:var(--on-wine)}
+.band h1,.band h2,.band h3{color:var(--on-wine)}
+.band .eyebrow,.band .gold{color:var(--on-wine-gold)}
+.band .muted{color:var(--on-wine-muted)}
+
+/* hero */
+.hero{background:radial-gradient(90% 80% at 80% 0%,var(--wine-glow) 0%,transparent 60%),linear-gradient(160deg,var(--wine),var(--wine-deep))}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:clamp(24px,5vw,64px);align-items:center;padding-block:clamp(40px,7vw,80px)}
+.hero-text{display:flex;flex-direction:column;gap:16px;align-items:flex-start}
+.tag{font-size:.88rem;color:var(--on-wine-gold);border:1px solid var(--on-wine-gold);border-radius:999px;padding:.15em 1em}
+.hero h1{font-size:clamp(2.3rem,5.4vw,3.9rem);line-height:1.3}
+.site[lang="en"] .hero h1{font-size:clamp(2.1rem,4.6vw,3.3rem);line-height:1.12}
+.hero p.lede{color:var(--on-wine-muted)}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:4px}
+.perks{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:10px;font-size:.92rem;color:var(--on-wine)}
+.perks li{display:flex;align-items:center;gap:8px}
+.perks .ic{color:var(--on-wine-gold);width:20px;height:20px}
+.loop{width:100%;max-width:520px;height:auto;justify-self:center;font-family:var(--body)}
+.loop .ring{fill:none;stroke:var(--on-wine-gold);stroke-width:1.5;stroke-dasharray:3 7;opacity:.7}
+.loop .node circle{fill:var(--wine-2);stroke:var(--on-wine-gold);stroke-width:1.5}
+.loop .node text{fill:var(--on-wine);font-size:22px;text-anchor:middle;dominant-baseline:central}
+.loop .node.last circle{fill:var(--on-wine-gold)}
+.loop .node.last text{fill:var(--wine-deep);font-weight:600}
+.loop .lbl{fill:var(--on-wine);font-size:21px;text-anchor:middle;dominant-baseline:central}
+.loop .core{fill:var(--on-wine-gold);font-family:var(--display);font-size:31px;text-anchor:middle}
+.site[lang="en"] .loop .core{font-size:25px}
+.loop .runner{transform-origin:300px 300px;animation:orbit 28s linear infinite}
+.loop .runner circle{fill:var(--on-wine)}
+@keyframes orbit{to{transform:rotate(360deg)}}
+
+/* spreads */
+.spread{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2.1fr);gap:clamp(24px,5vw,72px);padding-block:clamp(52px,8vw,96px);border-top:1px solid var(--line)}
+.spread.first{border-top:0}
+.spread.wide{grid-template-columns:minmax(0,1fr)}
+.spread-head{display:flex;flex-direction:column;gap:8px;align-self:start;position:sticky;top:calc(env(safe-area-inset-top,0px) + 92px)}
+.spread.wide .spread-head{position:static}
+.spread-body{display:flex;flex-direction:column;gap:32px;min-width:0}
+.block{display:flex;flex-direction:column;gap:14px}
+.block > .eyebrow{margin-bottom:-10px}
+
+/* lists */
+.dots{display:flex;flex-direction:column;gap:12px}
+.dots li{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:baseline}
+.dots li::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--gold);transform:translateY(-1px)}
+.dots.trust li::before{background:var(--trust)}
+.steps{display:flex;flex-direction:column;gap:14px;counter-reset:s}
+.steps li{counter-increment:s;display:grid;grid-template-columns:44px 1fr;gap:16px;align-items:center}
+.steps li::before,.stepper li::before{content:counter(s);width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--btn-bg);color:var(--btn-fg);font-weight:600;font-variant-numeric:tabular-nums}
+.steps li.end::before{background:var(--trust);color:var(--on-trust)}
+.stepper{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;counter-reset:s}
+.stepper li{counter-increment:s;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:12px;font-weight:500;line-height:1.6}
+
+/* grids & cards */
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.card p{color:var(--muted);font-size:.95rem;line-height:1.7}
+.feature .badge{width:44px;height:44px;border-radius:10px;background:var(--panel);color:var(--heading);display:grid;place-items:center;margin-bottom:6px}
+.tile{background:var(--panel);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:4px}
+.tile p{color:var(--muted);font-size:.95rem;line-height:1.7}
+.num{font:600 .85rem/1 var(--body);color:var(--gold-ink);font-variant-numeric:tabular-nums;width:28px;height:28px;border:1px solid var(--gold);border-radius:50%;display:grid;place-items:center;margin-bottom:4px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips li{border:1px solid var(--line);border-radius:999px;padding:.2em 1em;font-size:.92rem;background:var(--surface)}
+
+/* demo */
+.demo{background:var(--panel);border-radius:14px;padding:clamp(16px,3vw,28px);display:flex;flex-direction:column;gap:16px}
+.demo-row{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+.field{display:flex;flex-direction:column;gap:4px;font-size:.88rem;color:var(--muted);flex:1 1 200px;min-width:0}
+.field.narrow{flex:0 1 170px}
+.field input,.field select{font:inherit;font-size:1rem;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:0 .9em;min-height:46px;width:100%}
+.chip{font:500 .92rem/1.4 var(--body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:.4em 1.15em;min-height:38px;cursor:pointer}
+.chip:hover{border-color:var(--gold)}
+.chip[aria-pressed="true"]{background:var(--btn-bg);color:var(--btn-fg);border-color:var(--btn-bg)}
+.demo-meta{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font-size:.86rem;color:var(--muted)}
+.books{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.book{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;min-width:0;transition:box-shadow .2s,transform .2s}
+.book:hover{box-shadow:var(--shadow);transform:translateY(-2px)}
+.cover{background:var(--c);color:var(--on-cover);padding:16px 18px;min-height:118px;display:flex;flex-direction:column;justify-content:space-between;gap:10px}
+.cover small{font-size:.78rem;opacity:.85;letter-spacing:.02em}
+.cover h3{color:var(--on-cover);font-size:1.3rem;line-height:1.35}
+.book-in{padding:14px 18px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+.book .by{color:var(--muted);font-size:.92rem}
+.facts{display:grid;grid-template-columns:1fr auto;gap:2px 0;font-size:.9rem;font-variant-numeric:tabular-nums}
+.facts dt{color:var(--muted)}
+.facts dd{text-align:end;padding-inline-start:12px}
+.facts .total{font-weight:600;font-size:1.02rem;border-top:1px solid var(--line);padding-top:8px;margin-top:6px;color:var(--ink)}
+.book .btn{margin-top:auto;width:100%}
+.pill{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;margin-top:auto;border-radius:8px;background:var(--trust-soft);color:var(--trust);font-weight:600;font-size:.95rem}
+.empty{grid-column:1/-1;background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);padding:22px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.ok{color:var(--trust);font-weight:600}
+
+/* dialog */
+dialog.sheet{border:0;padding:0;border-radius:16px;background:var(--surface);color:var(--ink);width:min(440px,calc(100% - 32px));max-height:calc(100% - 32px);box-shadow:var(--shadow);overflow:auto}
+dialog.sheet::backdrop{background:rgba(24,6,12,.62)}
+.sheet-in{padding:22px;display:flex;flex-direction:column;gap:14px}
+.sheet .cover{border-radius:var(--r);min-height:0}
+.sheet .acts{display:flex;gap:10px;flex-wrap:wrap}
+.sheet .acts .btn{flex:1 1 140px}
+.note{background:var(--trust-soft);color:var(--trust);border-radius:8px;padding:10px 14px;font-size:.9rem;line-height:1.7;display:flex;gap:10px;align-items:flex-start}
+.note .ic{margin-top:3px}
+.okmark{width:56px;height:56px;border-radius:50%;background:var(--trust);color:var(--on-trust);display:grid;place-items:center}
+.okmark .ic{width:28px;height:28px;stroke-width:2.2}
+.next{display:flex;flex-direction:column;gap:10px;counter-reset:s;font-size:.95rem}
+.next li{counter-increment:s;display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:baseline}
+.next li::before{content:counter(s);width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--panel);color:var(--heading);font-size:.82rem;font-weight:600}
+
+/* example route */
+.route{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;font-family:var(--display);font-size:1.3rem;color:var(--heading);margin-bottom:6px}
+.route i{height:0;border-top:2px dashed var(--gold);position:relative}
+.route i::before,.route i::after{content:"";position:absolute;top:-7px;width:12px;height:12px;border-radius:50%;background:var(--gold)}
+.route i::before{inset-inline-start:0}
+.route i::after{inset-inline-end:0}
+
+/* tabs */
+.tabs{display:flex;gap:6px;overflow-x:auto;background:var(--panel);border-radius:12px;padding:6px;scrollbar-width:none}
+.tabs button{flex:1 0 auto;font:500 .95rem/1.3 var(--body);color:var(--muted);background:transparent;border:0;border-radius:8px;padding:.6em 1em;min-height:44px;cursor:pointer;white-space:nowrap}
+.tabs button:hover{color:var(--heading)}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--heading);font-weight:600;box-shadow:0 1px 3px rgba(74,16,35,.14)}
+.panel{display:flex;flex-direction:column;gap:22px}
+
+/* trust score */
+.score{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:clamp(18px,3vw,28px);display:flex;flex-direction:column;gap:20px;box-shadow:var(--shadow)}
+.who{display:flex;align-items:center;gap:16px}
+.avatar{width:64px;height:64px;border-radius:50%;background:var(--btn-bg);color:var(--btn-fg);display:grid;place-items:center;font:700 1.6rem/1 var(--display);flex:none}
+.who strong{font-size:1.2rem;display:block;line-height:1.4}
+.who span{color:var(--gold-ink);font-weight:600;font-variant-numeric:tabular-nums}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;text-align:center}
+.stats > div{background:var(--panel);border-radius:8px;padding:12px 6px}
+.stats b{display:block;font:600 2rem/1.3 var(--display-en);color:var(--heading);font-variant-numeric:tabular-nums}
+.stats small{color:var(--muted);font-size:.88rem}
+
+/* disputes */
+.says{background:var(--panel);border-radius:var(--r);padding:16px 20px}
+.says small{color:var(--gold-ink);font-size:.88rem}
+.says p{font-family:var(--display);font-size:1.25rem;color:var(--heading);line-height:1.5}
+.chain{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;counter-reset:c;position:relative}
+.chain::before{content:"";position:absolute;top:22px;inset-inline:8%;border-top:1px solid var(--gold)}
+.chain li{counter-increment:c;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;font-size:.86rem;line-height:1.5;position:relative}
+.chain li::before{content:counter(c);width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--btn-bg);color:var(--btn-fg);font-weight:600;font-size:1rem}
+.chain li:last-child::before{background:var(--trust);color:var(--on-trust)}
+.rule{background:var(--trust-soft);color:var(--trust);border-radius:var(--r);padding:14px 20px;font-weight:600;display:flex;gap:12px;align-items:center}
+.journey{display:flex;flex-direction:column;counter-reset:j}
+.journey li{counter-increment:j;display:grid;grid-template-columns:34px 8.5em 1fr;gap:14px;align-items:center;padding-block:10px;border-bottom:1px solid var(--line)}
+.journey li::before{content:counter(j);width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--btn-bg);color:var(--btn-fg);font-size:.92rem;font-weight:600}
+.journey b{font-weight:600;color:var(--heading)}
+.flow{display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:center;align-items:center;background:var(--wine);color:var(--on-wine);border-radius:999px;padding:12px 20px;font-weight:500}
+.flow .ic{width:18px;height:18px;color:var(--on-wine-gold)}
+.site[dir="rtl"] .flip{transform:scaleX(-1)}
+
+/* business */
+.biz h3{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.biz .dots{gap:8px;font-size:.96rem}
+.goal{border-top:1px solid var(--line);margin-top:12px;padding-top:12px;font-size:.92rem;color:var(--muted)}
+.goal b{color:var(--ink)}
+
+/* statement bands */
+.statement .wrap{padding-block:clamp(52px,8vw,92px);display:flex;flex-direction:column;gap:26px;align-items:center;text-align:center}
+.statement h2{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:400}
+.statement h2 span{display:block}
+.pillars{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;width:100%}
+.pillars li{background:var(--wine-2);border:1px solid var(--on-wine-gold);border-radius:var(--r);padding:18px 10px;font-size:.95rem;line-height:1.6}
+.quote{font-family:var(--display);font-size:clamp(1.3rem,3vw,1.8rem);line-height:1.6;max-width:28em}
+.mark{width:84px;height:auto}
+.mark rect{fill:var(--wine-2);stroke:var(--on-wine-gold);stroke-width:1.2}
+.hr{width:96px;border-top:1px solid var(--on-wine-gold)}
+footer .wrap{padding-block:26px;display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between;font-size:.88rem;color:var(--muted)}
+
+@media (max-width:1020px){
+  #menu-btn{display:inline-flex}
+  .nav .spacer{flex:1}
+  .nav ul{display:none;position:absolute;top:100%;inset-inline:0;flex-direction:column;gap:2px;background:var(--bg);border-bottom:1px solid var(--line);padding:8px clamp(16px,4vw,40px) 14px;box-shadow:var(--shadow)}
+  .nav[data-open="true"] ul{display:flex}
+  .nav ul a{padding:12px;font-size:1rem}
+  .nav ul a[aria-current]{box-shadow:none;background:var(--panel)}
+}
+@media (min-width:1021px){.nav .spacer{display:none}}
+@media (max-width:860px){
+  .hero .wrap,.spread{grid-template-columns:minmax(0,1fr)}
+  .spread-head{position:static}
+  .loop{max-width:420px}
+  .stepper{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pillars{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pillars li:last-child{grid-column:1/-1}
+}
+@media (max-width:620px){
+  .site{font-size:16px}
+  .g3,.g2,.stepper{grid-template-columns:minmax(0,1fr)}
+  .stepper li{flex-direction:row;align-items:center;gap:14px;padding:14px}
+  .stepper li::before{flex:none}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .chain{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:18px}
+  .chain::before{display:none}
+  .journey li{grid-template-columns:34px 1fr}
+  .journey li span{grid-column:2}
+  .nav .btn{display:none}
+  .cta .btn{flex:1 1 100%}
+  dialog.sheet{width:100%;max-width:100%;margin:auto 0 0;border-radius:18px 18px 0 0}
+  .sheet-in{padding-bottom:calc(22px + env(safe-area-inset-bottom,0px))}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .loop .runner{animation:none}
+  .btn,.book{transition:none}
+  .btn:hover,.book:hover{transform:none}
+}
+</style>
+</head>
+<body>
+<div class="site" id="site" dir="rtl" lang="ar">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20"/></symbol>
+  <symbol id="i-request" viewBox="0 0 24 24"><path d="M6 4h10a2 2 0 0 1 2 2v14H8a2 2 0 0 1-2-2z"/><path d="M12 9v6M9 12h6"/></symbol>
+  <symbol id="i-truck" viewBox="0 0 24 24"><path d="M2 7h11v9H2zM13 10h4l3 3v3h-7z"/><circle cx="6.5" cy="17.5" r="1.8"/><circle cx="16.5" cy="17.5" r="1.8"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2.2 2.2L15 10.2"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 4l2.4 5 5.6.7-4.1 3.8 1.1 5.5L12 16.3 7 19l1.1-5.5L4 9.7 9.6 9z"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="9" r="3.2"/><path d="M3 19c.6-3.2 3-5 6-5s5.4 1.8 6 5M16 6.2a3 3 0 0 1 0 5.6M18 14.5c1.6.8 2.6 2.300 3 4.500"/></symbol>
+  <symbol id="i-coins" viewBox="0 0 24 24"><ellipse cx="12" cy="7" rx="7" ry="3"/><path d="M5 7v5c0 1.700 3.100 3 7 3s7-1.300 7-3V7M5 12v5c0 1.700 3.100 3 7 3s7-1.300 7-3v-5"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24"><path d="M12 21s6-5.500 6-10.500a6 6 0 0 0-12 0C6 15.500 12 21 12 21z"/><circle cx="12" cy="10.500" r="2.200"/></symbol>
+</svg>
+
+<header class="nav" id="nav">
+  <div class="wrap">
+    <a class="brand" href="#top">BookLoop <span>بوك لوب</span></a>
+    <ul id="nav-list">
+      <li><a href="#problem" data-en="Problem">المشكلة</a></li>
+      <li><a href="#solution" data-en="Solution">الحل</a></li>
+      <li><a href="#demo" data-en="Try it">جرّب البحث</a></li>
+      <li><a href="#how" data-en="How it works">كيف يعمل</a></li>
+      <li><a href="#trust" data-en="Trust">الثقة والضمان</a></li>
+      <li><a href="#value" data-en="Value">القيمة</a></li>
+      <li><a href="#vision" data-en="Vision">الرؤية</a></li>
+    </ul>
+    <span class="spacer"></span>
+    <button type="button" class="tool" id="lang-btn" aria-label="Switch to English" data-en-aria="التحويل إلى العربية"><svg class="ic"><use href="#i-globe"/></svg><span data-en="العربية">English</span></button>
+    <a class="btn btn-main" href="#demo" data-en="Find a book">ابحث عن كتاب</a>
+    <button type="button" class="tool" id="menu-btn" aria-expanded="false" aria-controls="nav-list" aria-label="القائمة" data-en-aria="Menu"><svg class="ic"><use href="#i-menu"/></svg></button>
+  </div>
+</header>
+
+<main id="top">
+
+<section class="hero band">
+  <div class="wrap">
+    <div class="hero-text">
+      <span class="tag" data-en="A Saudi platform for the book-sharing economy">منصّة سعودية للاقتصاد التشاركي للكتب</span>
+      <h1 data-en="Read more. Buy less. Share more.">اقرأ أكثر، اشترِ أقل، وشارك أكثر</h1>
+      <p class="eyebrow"><bdi data-en="اقرأ أكثر، اشترِ أقل، وشارك أكثر">Read more. Buy less. Share more.</bdi></p>
+      <p class="lede" data-en="BookLoop connects book owners with readers across Saudi cities. Borrow the book you need, get it shipped to you, read it, then return it so the next reader can have it.">BookLoop يربط بين أصحاب الكتب والقرّاء في مدن المملكة. تستعير الكتاب الذي تحتاجه، يصلك بالشحن، تقرؤه، ثم تعيده ليصبح متاحًا لقارئ آخر.</p>
+      <div class="cta">
+        <a class="btn btn-gold" href="#demo"><svg class="ic"><use href="#i-search"/></svg><span data-en="Find a book">ابحث عن كتاب</span></a>
+        <a class="btn btn-ghost" href="#how" data-en="How BookLoop works">كيف يعمل BookLoop؟</a>
+      </div>
+      <ul class="perks">
+        <li><svg class="ic"><use href="#i-shield"/></svg><span data-en="Refundable deposit">ضمان قابل للاسترداد</span></li>
+        <li><svg class="ic"><use href="#i-truck"/></svg><span data-en="City-to-city shipping">شحن بين المدن</span></li>
+        <li><svg class="ic"><use href="#i-star"/></svg><span data-en="A trust score for every user">درجة ثقة لكل مستخدم</span></li>
+      </ul>
+    </div>
+    <svg class="loop" viewBox="-30 0 660 590" role="img" aria-label="رحلة المستخدم في سبع خطوات: بحث، طلب، دفع، استلام، قراءة، إرجاع، ثم تستمر الدورة" data-en-aria="The user journey in seven steps: search, request, pay, receive, read, return, then the loop continues">
+      <circle class="ring" cx="300" cy="300" r="190"/>
+      <g class="runner"><circle cx="300" cy="110" r="6"/></g>
+      <text class="core" x="300" y="290" data-en="Every book deserves">كل كتاب يستحق</text>
+      <text class="core" x="300" y="336" data-en="more than one reader">أكثر من قارئ</text>
+      <g class="node"><circle cx="300" cy="110" r="30"/><text x="300" y="110">1</text></g>
+      <g class="node"><circle cx="448.5" cy="181.5" r="30"/><text x="448.5" y="181.5">2</text></g>
+      <g class="node"><circle cx="485.2" cy="342.3" r="30"/><text x="485.2" y="342.3">3</text></g>
+      <g class="node"><circle cx="382.4" cy="471.2" r="30"/><text x="382.4" y="471.2">4</text></g>
+      <g class="node"><circle cx="217.6" cy="471.2" r="30"/><text x="217.6" y="471.2">5</text></g>
+      <g class="node"><circle cx="114.8" cy="342.3" r="30"/><text x="114.8" y="342.3">6</text></g>
+      <g class="node last"><circle cx="151.5" cy="181.5" r="30"/><text x="151.5" y="181.5">7</text></g>
+      <text class="lbl" x="300" y="52" data-en="Search">بحث</text>
+      <text class="lbl" x="505" y="130" data-en="Request">طلب</text>
+      <text class="lbl" x="485" y="396" data-en="Pay">دفع</text>
+      <text class="lbl" x="412" y="528" data-en="Receive">استلام</text>
+      <text class="lbl" x="188" y="528" data-en="Read">قراءة</text>
+      <text class="lbl" x="115" y="396" data-en="Return">إرجاع</text>
+      <text class="lbl" x="96" y="130" data-en="Loop continues">تستمر الدورة</text>
+    </svg>
+  </div>
+</section>
+
+<div class="wrap">
+
+<section class="spread first" id="problem">
+  <div class="spread-head">
+    <p class="eyebrow"><bdi data-en="المشكلة">The Problem</bdi></p>
+    <h2 data-en="The problem">المشكلة</h2>
+    <p class="muted" data-en="Plenty of books sit on shelves while readers look for them and can't find them.">كتب كثيرة على الرفوف، وقرّاء يبحثون عنها ولا يجدونها.</p>
+  </div>
+  <div class="spread-body">
+    <ul class="dots">
+      <li data-en="Many books are bought, then sit on the shelf unused for long periods">كثير من الكتب يتم شراؤها ثم تبقى على الرف دون استخدام لفترات طويلة</li>
+      <li data-en="Some readers need a book only for a short time and don't want to buy it">بعض القرّاء يحتاجون الكتاب لفترة قصيرة فقط ولا يرغبون في شرائه</li>
+      <li data-en="The price of some books makes buying them for temporary use impractical">أسعار بعض الكتب تجعل شراءها للاستخدام المؤقت غير عملي</li>
+      <li data-en="It's hard to find someone nearby who owns the book I need">من الصعب العثور على شخص قريب يمتلك الكتاب الذي أحتاجه</li>
+      <li data-en="There is no dedicated, safe platform that makes lending books between people easy">لا توجد منصة متخصصة وآمنة تسهّل إعارة الكتب بين الأشخاص</li>
+    </ul>
+    <div class="block">
+      <p class="eyebrow"><bdi data-en="الأسباب الجذرية">Root Causes</bdi></p>
+      <h3 data-en="Why does this happen?">لماذا تحدث هذه المشكلة؟</h3>
+      <div class="grid g2">
+        <div class="tile"><h3 data-en="Few options">نقص الخيارات</h3><p data-en="There is no easy way to share books instead of buying them new">لا توجد وسيلة سهلة لمشاركة الكتب بدل شرائها من جديد</p></div>
+        <div class="tile"><h3 data-en="No trust">غياب الثقة</h3><p data-en="It's hard to trust a stranger when lending or borrowing a book">صعوبة الوثوق بشخص غريب عند إعارة أو استعارة كتاب</p></div>
+        <div class="tile"><h3 data-en="The shipping challenge">تحدي الشحن</h3><p data-en="There is no clear system for moving books safely between cities">لا يوجد نظام واضح لنقل الكتب بأمان بين المدن</p></div>
+        <div class="tile"><h3 data-en="No incentive">غياب الحافز</h3><p data-en="Nothing clearly encourages book owners to share them">لا يوجد سبب واضح يشجّع أصحاب الكتب على مشاركتها</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="spread" id="solution">
+  <div class="spread-head">
+    <p class="eyebrow"><bdi data-en="الحل">The Solution</bdi></p>
+    <h2 data-en="The solution">الحل</h2>
+    <p class="muted" data-en="One platform that connects book owners and readers.">منصّة واحدة تربط بين أصحاب الكتب والقرّاء.</p>
+  </div>
+  <div class="spread-body">
+    <div class="grid g3">
+      <div class="card feature"><span class="badge"><svg class="ic"><use href="#i-search"/></svg></span><h3 data-en="Search">البحث</h3><p data-en="Find books by city">البحث عن الكتب حسب المدينة</p></div>
+      <div class="card feature"><span class="badge"><svg class="ic"><use href="#i-request"/></svg></span><h3 data-en="Borrow request">طلب الاستعارة</h3><p data-en="Request an available book">طلب استعارة كتاب متاح</p></div>
+      <div class="card feature"><span class="badge"><svg class="ic"><use href="#i-truck"/></svg></span><h3 data-en="Shipping">الشحن</h3><p data-en="Ship the book between cities">شحن الكتاب بين المدن</p></div>
+      <div class="card feature"><span class="badge"><svg class="ic"><use href="#i-shield"/></svg></span><h3 data-en="Deposit">الضمان</h3><p data-en="A refundable deposit">ضمان قابل للاسترداد</p></div>
+      <div class="card feature"><span class="badge"><svg class="ic"><use href="#i-star"/></svg></span><h3 data-en="Ratings">التقييمات</h3><p data-en="Rate users and build trust">تقييم المستخدمين وبناء الثقة</p></div>
+      <div class="card feature"><span class="badge"><svg class="ic"><use href="#i-bell"/></svg></span><h3 data-en="Wishlist">قائمة الأمنيات</h3><p data-en="Get notified when a wanted book becomes available">تنبيه عند توفر كتاب مطلوب</p></div>
+    </div>
+    <div class="block">
+      <p class="eyebrow"><bdi data-en="شاشات التطبيق">App Screens</bdi></p>
+      <h3 data-en="Key app screens">أهم خصائص التطبيق</h3>
+      <ul class="chips">
+        <li data-en="Home">الرئيسية</li><li data-en="Search">بحث</li><li data-en="Book Details">تفاصيل الكتاب</li><li data-en="Request to Borrow">طلب استعارة</li><li data-en="Shipping &amp; Deposit">الشحن والضمان</li>
+        <li data-en="My Books">كتبي</li><li data-en="My Borrowed Books">الكتب المستعارة</li><li data-en="Wishlist">قائمة الأمنيات</li><li data-en="Trust Score &amp; Profile">الملف الشخصي والثقة</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="spread" id="demo">
+  <div class="spread-head">
+    <p class="eyebrow"><bdi data-en="جرّب البحث">Try It</bdi></p>
+    <h2 data-en="Try the search">جرّب البحث</h2>
+    <p class="muted" data-en="Pick a city, search for a book, then request it to see the shipping fee and deposit before you confirm.">اختر مدينة، ابحث عن كتاب، ثم اطلب استعارته لترى رسوم الشحن والضمان قبل التأكيد.</p>
+  </div>
+  <div class="spread-body">
+    <div class="demo">
+      <div class="demo-row">
+        <label class="field" for="bl-q"><span data-en="Search by title or author">ابحث بعنوان الكتاب أو المؤلف</span>
+          <input id="bl-q" type="search" placeholder="مثال: ابن خلدون" data-en-ph="e.g. Ibn Khaldun" autocomplete="off">
+        </label>
+        <label class="field narrow" for="bl-mine"><span data-en="Your city">مدينتك</span>
+          <select id="bl-mine"></select>
+        </label>
+      </div>
+      <div class="chips" id="bl-chips" role="group" aria-label="مدينة الكتاب" data-en-aria="Book city"></div>
+      <div class="demo-meta"><span id="bl-count" role="status" aria-live="polite"></span><span data-en="Sample data: books and amounts are for illustration only">بيانات تجريبية: الكتب والمبالغ للتوضيح فقط</span></div>
+      <div class="books" id="bl-list"></div>
+    </div>
+  </div>
+</section>
+
+<section class="spread" id="how">
+  <div class="spread-head">
+    <p class="eyebrow"><bdi data-en="كيف يعمل">How It Works</bdi></p>
+    <h2 data-en="How does BookLoop work?">كيف يعمل BookLoop؟</h2>
+    <p class="muted" data-en="A continuous loop: once a book is returned, it becomes available to another reader.">دورة مستمرة: بعد إعادة الكتاب يصبح متاحًا لقارئ آخر.</p>
+  </div>
+  <div class="spread-body">
+    <ol class="stepper">
+      <li><span data-en="List your books for lending">اعرض كتبك للإعارة</span></li>
+      <li><span data-en="Search for the book you need">ابحث عن الكتاب الذي تحتاجه</span></li>
+      <li><span data-en="Pay the shipping fee and deposit">ادفع رسوم الشحن والضمان</span></li>
+      <li><span data-en="Receive the book, read it, then return it">استلم الكتاب، اقرأه، ثم أعده</span></li>
+    </ol>
+    <div class="block">
+      <p class="eyebrow"><bdi data-en="مكة ← الرياض">Makkah → Riyadh</bdi></p>
+      <h3 data-en="A real example">مثال واقعي</h3>
+      <div class="tile">
+        <div class="route"><span data-en="Makkah">مكة</span><i></i><span data-en="Riyadh">الرياض</span></div>
+        <p data-en="Hala in Makkah is looking for a specific book and finds it with a user in Riyadh. She sends a borrow request and pays the shipping fee and deposit. The book reaches Hala, she reads it for 14 days, then returns it. After that, the book is available to another reader.">هلا في مكة تبحث عن كتاب معيّن، وتجده لدى مستخدمة في الرياض. ترسل طلب استعارة، وتدفع رسوم الشحن والضمان. يصل الكتاب إلى هلا، فتقرأه لمدة 14 يومًا، ثم تعيده. بعد ذلك يصبح الكتاب متاحًا لقارئ آخر.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="spread" id="trust">
+  <div class="spread-head">
+    <p class="eyebrow"><bdi data-en="نظام الثقة والضمان">Trust &amp; Deposit System</bdi></p>
+    <h2 data-en="Trust &amp; deposit system">نظام الثقة والضمان</h2>
+    <p class="muted" data-en="BookLoop doesn't rely on trust alone. It builds a system that makes trust measurable.">BookLoop لا يعتمد على الثقة وحدها، بل يبني نظامًا يجعل الثقة قابلة للقياس.</p>
+  </div>
+  <div class="spread-body">
+    <div class="tabs" role="tablist" aria-label="نظام الثقة" data-en-aria="Trust system">
+      <button type="button" role="tab" id="tab-1" aria-controls="pan-1" aria-selected="true" data-en="Deposit">الضمان</button>
+      <button type="button" role="tab" id="tab-2" aria-controls="pan-2" aria-selected="false" tabindex="-1" data-en="Protection">الحماية</button>
+      <button type="button" role="tab" id="tab-3" aria-controls="pan-3" aria-selected="false" tabindex="-1" data-en="Trust score">درجة الثقة</button>
+      <button type="button" role="tab" id="tab-4" aria-controls="pan-4" aria-selected="false" tabindex="-1" data-en="Disputes">النزاعات</button>
+    </div>
+
+    <div class="panel" role="tabpanel" id="pan-1" aria-labelledby="tab-1">
+      <ol class="steps">
+        <li><span data-en="Set the book's value and condition before lending">تحديد قيمة الكتاب وحالته قبل الإعارة</span></li>
+        <li><span data-en="The borrower pays a refundable deposit">دفع المستعير مبلغًا ضامنًا قابلاً للاسترداد</span></li>
+        <li><span data-en="The book is returned in good condition and on time">إعادة الكتاب بحالة جيدة وفي الموعد المحدد</span></li>
+        <li class="end"><span data-en="The deposit is refunded in full, or a compensation policy applies for delay or damage">استرداد الضمان بالكامل، أو تطبيق سياسة تعويض عند التأخير أو التلف</span></li>
+      </ol>
+      <div class="block">
+        <p class="eyebrow"><bdi data-en="المالك ← BookLoop ← المستعير">Owner → BookLoop → Borrower</bdi></p>
+        <h3 data-en="The book's safe journey">رحلة الكتاب الآمنة</h3>
+        <ol class="journey">
+          <li><b data-en="Owner">المالك</b><span data-en="Documents the book's condition with photos">يوثق حالة الكتاب بالصور</span></li>
+          <li><b>BookLoop</b><span data-en="Holds the deposit and tracks shipping">يحجز الضمان ويتابع الشحن</span></li>
+          <li><b data-en="Borrower">المستعير</b><span data-en="Confirms the condition on receipt">يؤكد حالة الاستلام</span></li>
+          <li><b data-en="Reading period">فترة القراءة</b><span data-en="The agreed loan duration">مدة الإعارة المتفق عليها</span></li>
+          <li><b data-en="Return">الإرجاع</b><span data-en="The book goes back to its owner">إعادة الكتاب لصاحبه</span></li>
+          <li><b data-en="Owner">المالك</b><span data-en="Confirms the returned book's condition">يؤكد حالة الكتاب المُعاد</span></li>
+          <li><b>BookLoop</b><span data-en="Closes the transaction and refunds the deposit to the borrower">يُغلق العملية ويُعيد الضمان للمستعير</span></li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="panel" role="tabpanel" id="pan-2" aria-labelledby="tab-2" hidden>
+      <h3 data-en="How do we ensure trust between users?">كيف نضمن الثقة بين المستخدمين؟</h3>
+      <div class="grid g2">
+        <div class="card"><span class="num">1</span><h3 data-en="Document the book's condition">توثيق حالة الكتاب</h3><p data-en="Photograph the book from every side and record defects before lending">تصوير الكتاب من جميع الجهات وتسجيل العيوب قبل الإعارة</p></div>
+        <div class="card"><span class="num">2</span><h3 data-en="Confirm receipt">تأكيد الاستلام</h3><p data-en="Inspect the book on arrival and report any issue with photos">فحص الكتاب عند الوصول والإبلاغ عن أي مشكلة بالصور</p></div>
+        <div class="card"><span class="num">3</span><h3 data-en="Deposit held safely">ضمان مالي محفوظ</h3><p data-en="The deposit is held until the return condition is confirmed">يُحجز مبلغ الضمان حتى التأكد من حالة الإرجاع</p></div>
+        <div class="card"><span class="num">4</span><h3 data-en="Document the return">توثيق عند الإرجاع</h3><p data-en="Record the book's condition and the shipping journey again">تسجيل حالة الكتاب ورحلة الشحن مرة أخرى</p></div>
+        <div class="card"><span class="num">5</span><h3 data-en="Dispute system">نظام النزاعات</h3><p data-en="Evidence and photos are reviewed before deciding what happens to the deposit">مراجعة الأدلة والصور قبل تحديد مصير الضمان</p></div>
+        <div class="card"><span class="num">6</span><h3 data-en="Trust score">درجة الثقة</h3><p data-en="A score built on lending history, commitment, and ratings">درجة ثقة مبنية على سجل الإعارات والالتزام والتقييمات</p></div>
+      </div>
+    </div>
+
+    <div class="panel" role="tabpanel" id="pan-3" aria-labelledby="tab-3" hidden>
+      <h3 data-en="Trust is built with every loan">الثقة تُبنى مع كل إعارة</h3>
+      <div class="score">
+        <div class="who">
+          <div class="avatar" aria-hidden="true" data-en="H">هـ</div>
+          <div><strong data-en="Hala">هلا</strong><span dir="ltr">4.9 / 5</span></div>
+        </div>
+        <div class="stats">
+          <div><b>18</b><small data-en="Loans">إعارة</small></div>
+          <div><b>18</b><small data-en="Returns">إرجاع</small></div>
+          <div><b dir="ltr">100%</b><small data-en="On time">في الموعد</small></div>
+          <div><b>0</b><small data-en="Disputes">نزاعات</small></div>
+        </div>
+      </div>
+      <p data-en="The higher the trust level, the more a user can do on the platform.">كلما ارتفع مستوى الثقة، زادت صلاحيات المستخدم داخل المنصة.</p>
+      <p class="muted" data-en="A new user starts with limited borrowing, then earns more benefits as they build a reliable record.">المستخدم الجديد يبدأ بحدود إعارة محدودة، ثم يحصل على مزايا أكبر مع بناء سجل موثوق.</p>
+    </div>
+
+    <div class="panel" role="tabpanel" id="pan-4" aria-labelledby="tab-4" hidden>
+      <h3 data-en="What happens if there's a disagreement?">ماذا يحدث إذا حدث خلاف؟</h3>
+      <div class="grid g2">
+        <div class="says"><small data-en="Borrower">المستعير</small><p data-en="“I returned the book in excellent condition”">«أعدت الكتاب بحالة ممتازة»</p></div>
+        <div class="says"><small data-en="Owner">المالك</small><p data-en="“The book reached me damaged”">«الكتاب وصلني تالفًا»</p></div>
+      </div>
+      <ol class="chain">
+        <li><span data-en="Photos before lending">صور قبل الإعارة</span></li>
+        <li><span data-en="Shipment tracking">تتبع الشحنة</span></li>
+        <li><span data-en="Photos on receipt">صور عند الاستلام</span></li>
+        <li><span data-en="Photos on return">صور عند الإرجاع</span></li>
+        <li><span data-en="Evidence review">مراجعة الأدلة</span></li>
+        <li><span data-en="Deposit decision">تحديد مصير الضمان</span></li>
+      </ol>
+      <p class="rule"><svg class="ic"><use href="#i-shield"/></svg><span data-en="The deposit is never deducted or transferred to either party just because a claim was made">لا يتم خصم الضمان أو تحويله لأي طرف لمجرد وجود ادعاء</span></p>
+      <p class="flow"><span data-en="Dispute Center">مركز النزاعات</span><svg class="ic flip"><use href="#i-arrow"/></svg><span data-en="Evidence Review">مراجعة الأدلة</span><svg class="ic flip"><use href="#i-arrow"/></svg><span data-en="Resolution">القرار</span></p>
+    </div>
+  </div>
+</section>
+
+<section class="spread" id="value">
+  <div class="spread-head">
+    <p class="eyebrow"><bdi data-en="القيمة التي نقدمها">What We Deliver</bdi></p>
+    <h2 data-en="What we deliver">القيمة التي نقدمها</h2>
+    <p class="muted" data-en="Protection + documentation + deposit + ratings = a safer experience.">نظام حماية + توثيق + ضمان + تقييم = تجربة أكثر أمانًا.</p>
+  </div>
+  <div class="spread-body">
+    <div class="grid g3">
+      <div class="card"><h3 data-en="For owners">للمالك</h3><p data-en="Share your books without fear of losing or damaging them">شارك كتبك دون الخوف من فقدانها أو تلفها</p></div>
+      <div class="card"><h3 data-en="For borrowers">للمستعير</h3><p data-en="Read the book you need without buying it outright">اقرأ الكتاب الذي تحتاجه دون شرائه بالكامل</p></div>
+      <div class="card"><h3 data-en="For both">للاثنين</h3><p data-en="Protection, documentation, a deposit and ratings make the experience safer">نظام حماية وتوثيق وضمان وتقييم يجعل التجربة أكثر أمانًا</p></div>
+    </div>
+    <div class="block">
+      <p class="eyebrow"><bdi data-en="القيمة المقترحة">Value Proposition</bdi></p>
+      <h3 data-en="Value proposition">القيمة المقترحة</h3>
+      <div class="grid g2">
+        <div class="tile"><h3 data-en="Access without ownership">وصول بلا امتلاك</h3><p data-en="Benefit from books without having to buy them">الاستفادة من الكتب دون الحاجة لشرائها</p></div>
+        <div class="tile"><h3 data-en="Real savings">توفير حقيقي</h3><p data-en="Costs less than buying a book for temporary use">تكلفة أقل من شراء كتاب لاستخدام مؤقت</p></div>
+        <div class="tile"><h3 data-en="Sustainability">استدامة</h3><p data-en="Books get reused instead of sitting on the shelf">إعادة استخدام الكتب بدل بقائها على الرف</p></div>
+        <div class="tile"><h3 data-en="Community &amp; trust">مجتمع وثقة</h3><p data-en="A network of readers built on ratings and credibility">شبكة قرّاء مبنية على التقييم والمصداقية</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="spread wide" id="business">
+  <div class="spread-head">
+    <p class="eyebrow"><bdi data-en="الجمهور والإيرادات والتوسع">Audience · Revenue · Expansion</bdi></p>
+    <h2 data-en="Audience, revenue, and growth">الجمهور، الإيرادات، والتوسع</h2>
+  </div>
+  <div class="grid g3 biz">
+    <div class="card">
+      <h3><svg class="ic"><use href="#i-users"/></svg><span data-en="Target audience">الفئة المستهدفة</span></h3>
+      <ul class="dots">
+        <li data-en="University students">طلاب الجامعات</li>
+        <li data-en="Readers and people interested in books and novels">القراء والمهتمون بالكتب والروايات</li>
+        <li data-en="People who need books for a short time">الأشخاص الذين يحتاجون كتبًا لفترة قصيرة</li>
+        <li data-en="Students who need textbooks and academic books">الطلاب المحتاجون للكتب الدراسية والأكاديمية</li>
+        <li data-en="Book clubs and reading communities">الأندية والمجتمعات القرائية</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3><svg class="ic"><use href="#i-coins"/></svg><span data-en="Revenue model">نموذج الإيرادات</span></h3>
+      <ul class="dots trust">
+        <li data-en="A small service fee on every loan">رسوم خدمة بسيطة على كل عملية إعارة</li>
+        <li data-en="A commission on paid transactions">عمولة من المعاملات المدفوعة</li>
+        <li data-en="A Premium subscription for extra benefits">اشتراك Premium لمزايا إضافية</li>
+        <li data-en="Partnerships with libraries, universities, and publishers">شراكات مع المكتبات والجامعات ودور النشر</li>
+        <li data-en="Partnerships with shipping companies">شراكات مع شركات الشحن</li>
+      </ul>
+      <p class="goal"><b data-en="First goal:">الهدف الأول:</b> <span data-en="build a user base and an active book market before expanding revenue.">بناء قاعدة مستخدمين وسوق نشط للكتب قبل التوسع في الإيرادات.</span></p>
+    </div>
+    <div class="card">
+      <h3><svg class="ic"><use href="#i-map"/></svg><span data-en="Future &amp; expansion">مستقبل وتوسع المشروع</span></h3>
+      <ul class="dots">
+        <li data-en="Expanding to new cities and regions in the Kingdom">التوسع إلى مدن ومناطق جديدة في المملكة</li>
+        <li data-en="Partnerships with libraries and universities">شراكات مع المكتبات والجامعات</li>
+        <li data-en="Support for academic books and curricula">دعم الكتب الأكاديمية والمناهج الدراسية</li>
+        <li data-en="A dedicated version for public libraries and schools">نسخة مخصصة للمكتبات العامة والمدارس</li>
+        <li data-en="Community features: digital reading clubs">ميزات مجتمعية: نوادي قراءة رقمية</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<section class="band statement">
+  <div class="wrap">
+    <h2><span data-en="BookLoop doesn't sell books">BookLoop لا يبيع الكتب</span><span class="gold" data-en="It gives access to them without the need to own them">بل يمنح الوصول إليها دون الحاجة لامتلاكها</span></h2>
+    <ul class="pillars">
+      <li data-en="Sharing economy">اقتصاد تشاركي</li>
+      <li data-en="Reusing resources">إعادة استخدام الموارد</li>
+      <li data-en="Trust &amp; rating system">نظام ثقة وتقييم</li>
+      <li data-en="City-to-city shipping">شحن بين المدن</li>
+      <li data-en="Reading community">مجتمع قرائي</li>
+    </ul>
+    <p class="quote" data-en="We don't rely on trust alone. We build a system that makes trust measurable.">نحن لا نعتمد على الثقة فقط، بل نبني نظامًا يجعل الثقة قابلة للقياس</p>
+  </div>
+</section>
+
+<section class="band statement" id="vision">
+  <div class="wrap">
+    <svg class="mark" viewBox="0 0 86 54" aria-hidden="true"><rect x="1" y="1" width="40" height="52" rx="4"/><rect x="45" y="1" width="40" height="52" rx="4"/></svg>
+    <span class="gold" data-en="Vision">الرؤية</span>
+    <h2 data-en="For BookLoop to become a leading Saudi platform for sharing books and recirculating them among readers">أن تصبح BookLoop منصة سعودية رائدة لمشاركة الكتب وإعادة تداولها بين القراء</h2>
+    <span class="hr"></span>
+    <p class="quote gold" data-en="“Every book deserves more than one reader.”">«كل كتاب يستحق أكثر من قارئ»</p>
+    <a class="btn btn-gold" href="#demo" data-en="Find your next book">ابحث عن كتابك القادم</a>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>BookLoop | بوك لوب</span>
+    <span data-en="A concept prototype. Books and amounts in the demo are illustrative examples.">نموذج أولي للعرض. الكتب والمبالغ في التجربة أمثلة توضيحية.</span>
+  </div>
+</footer>
+
+<dialog class="sheet" id="bl-dlg" aria-labelledby="dlg-title"><div class="sheet-in" id="bl-dlg-body"></div></dialog>
+
+</div>
+
+<script>
+(function(){
+  var site=document.getElementById("site"), lang="ar";
+  var $=function(s){return document.querySelector(s)}, $$=function(s){return [].slice.call(document.querySelectorAll(s))};
+
+  /* ---------- language ---------- */
+  var txt=$$("[data-en]"), ph=$$("[data-en-ph]"), ar=$$("[data-en-aria]");
+  txt.forEach(function(n){n._ar=n.textContent});
+  ph.forEach(function(n){n._ar=n.getAttribute("placeholder")});
+  ar.forEach(function(n){n._ar=n.getAttribute("aria-label")});
+  function setLang(l,save){
+    lang=l; var en=l==="en";
+    site.lang=l; site.dir=en?"ltr":"rtl";
+    document.documentElement.lang=l; document.documentElement.dir=site.dir;
+    txt.forEach(function(n){n.textContent=en?n.getAttribute("data-en"):n._ar});
+    ph.forEach(function(n){n.setAttribute("placeholder",en?n.getAttribute("data-en-ph"):n._ar)});
+    ar.forEach(function(n){n.setAttribute("aria-label",en?n.getAttribute("data-en-aria"):n._ar)});
+    drawCities(); draw();
+    if(save){try{localStorage.setItem("bookloop-lang",l)}catch(e){}}
+  }
+  $("#lang-btn").addEventListener("click",function(){setLang(lang==="ar"?"en":"ar",true)});
+
+  /* ---------- mobile menu + active section ---------- */
+  var nav=$("#nav"), menuBtn=$("#menu-btn"), links=$$("#nav-list a");
+  function menu(open){nav.setAttribute("data-open",open);menuBtn.setAttribute("aria-expanded",open)}
+  menuBtn.addEventListener("click",function(){menu(nav.getAttribute("data-open")!=="true")});
+  links.forEach(function(a){a.addEventListener("click",function(){menu(false)})});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")menu(false)});
+  if("IntersectionObserver" in window){
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(!e.isIntersecting) return;
+        links.forEach(function(a){
+          if(a.getAttribute("href")==="#"+e.target.id) a.setAttribute("aria-current","true");
+          else a.removeAttribute("aria-current");
+        });
+      });
+    },{rootMargin:"-30% 0px -62% 0px"});
+    links.forEach(function(a){var s=document.getElementById(a.getAttribute("href").slice(1)); if(s) io.observe(s)});
+  }
+
+  /* ---------- tabs ---------- */
+  var tabs=$$('[role="tab"]');
+  function pick(t,focus){
+    tabs.forEach(function(x){
+      var on=x===t; x.setAttribute("aria-selected",on); x.tabIndex=on?0:-1;
+      document.getElementById(x.getAttribute("aria-controls")).hidden=!on;
+    });
+    if(focus) t.focus();
+  }
+  tabs.forEach(function(t,i){
+    t.addEventListener("click",function(){pick(t)});
+    t.addEventListener("keydown",function(e){
+      var f=site.dir==="rtl"?-1:1, d=e.key==="ArrowRight"?f:e.key==="ArrowLeft"?-f:0;
+      if(d){e.preventDefault(); pick(tabs[(i+d+tabs.length)%tabs.length],true)}
+    });
+  });
+
+  /* ---------- search + borrow demo (sample data) ---------- */
+  var CITY={jed:["جدة","Jeddah"],mak:["مكة","Makkah"],ruh:["الرياض","Riyadh"],dmm:["الدمام","Dammam"],med:["المدينة","Madinah"]};
+  var ORDER=["jed","mak","ruh","dmm","med"];
+  var BOOKS=[
+    {id:1,c:"ruh",d:80,s:"4.9",col:1,t:["مقدمة ابن خلدون","The Muqaddimah"],a:["ابن خلدون","Ibn Khaldun"],k:["تاريخ واجتماع","History & society"]},
+    {id:2,c:"jed",d:45,s:"4.8",col:2,t:["كليلة ودمنة","Kalila wa Dimna"],a:["ابن المقفع","Ibn al-Muqaffa"],k:["أدب","Literature"]},
+    {id:3,c:"mak",d:40,s:"4.7",col:4,t:["البخلاء","The Book of Misers"],a:["الجاحظ","Al-Jahiz"],k:["أدب","Literature"]},
+    {id:4,c:"med",d:40,s:"5.0",col:5,t:["طوق الحمامة","The Ring of the Dove"],a:["ابن حزم","Ibn Hazm"],k:["أدب","Literature"]},
+    {id:5,c:"dmm",d:50,s:"4.6",col:3,t:["رسالة الغفران","The Epistle of Forgiveness"],a:["أبو العلاء المعري","Al-Ma'arri"],k:["أدب","Literature"]},
+    {id:6,c:"ruh",d:35,s:"4.9",col:2,t:["حي بن يقظان","Hayy ibn Yaqzan"],a:["ابن طفيل","Ibn Tufayl"],k:["فلسفة","Philosophy"]},
+    {id:7,c:"jed",d:120,s:"4.8",col:3,t:["مدخل إلى تفاعل الإنسان والحاسب","Introduction to Human–Computer Interaction"],a:["مرجع جامعي","University textbook"],k:["أكاديمي","Academic"]},
+    {id:8,c:"mak",d:110,s:"4.7",col:1,t:["أساسيات تصميم واجهات المستخدم","Fundamentals of UI Design"],a:["مرجع جامعي","University textbook"],k:["أكاديمي","Academic"]}
+  ];
+  var T={
+    ar:{all:"الكل",count:"عدد الكتب المتاحة للإعارة: ",city:"مدينة الكتاب",owner:"ثقة المالك",borrow:"اطلب استعارة",sent:"تم إرسال الطلب",
+        none:"لا يوجد كتاب مطابق",noneFor:" لـ «",noneEnd:"»",inCity:" في ",now:" حاليًا.",wish:"أضفه إلى قائمة الأمنيات",wished:"أُضيف إلى قائمة الأمنيات. سننبهك عند توفره.",
+        dlg:"طلب استعارة",shipIn:"رسوم الشحن (داخل المدينة)",shipOut:"رسوم الشحن (بين المدن)",route:"مسار الشحن",dep:"ضمان يُسترد عند الإرجاع",dur:"مدة الإعارة",days:"14 يومًا",total:"تدفع الآن",
+        note:"يبقى الضمان محجوزًا لدى BookLoop ويُعاد كاملًا عند إرجاع الكتاب بحالة جيدة وفي الموعد.",confirm:"تأكيد الطلب",cancel:"إلغاء",
+        okTitle:"تم إرسال طلبك",okSub:"الخطوات التالية:",done:"تم",
+        next:["المالك يوثق حالة الكتاب بالصور","BookLoop يحجز الضمان ويتابع الشحن","تستلم الكتاب وتؤكد حالته","تقرؤه 14 يومًا ثم تعيده ويُعاد إليك الضمان"]},
+    en:{all:"All",count:"Books available to borrow: ",city:"Book city",owner:"Owner trust",borrow:"Request to borrow",sent:"Request sent",
+        none:"No matching book",noneFor:" for “",noneEnd:"”",inCity:" in ",now:" right now.",wish:"Add it to my wishlist",wished:"Added to your wishlist. We'll notify you when it's available.",
+        dlg:"Borrow request",shipIn:"Shipping fee (same city)",shipOut:"Shipping fee (between cities)",route:"Shipping route",dep:"Deposit, refunded on return",dur:"Loan duration",days:"14 days",total:"You pay now",
+        note:"BookLoop holds the deposit and refunds it in full when the book is returned in good condition and on time.",confirm:"Confirm request",cancel:"Cancel",
+        okTitle:"Your request was sent",okSub:"What happens next:",done:"Done",
+        next:["The owner documents the book's condition with photos","BookLoop holds the deposit and tracks shipping","You receive the book and confirm its condition","You read it for 14 days, return it, and get your deposit back"]}
+  };
+  var st={city:"all",q:"",mine:"mak",sent:{},wish:{}};
+  var list=$("#bl-list"),chips=$("#bl-chips"),count=$("#bl-count"),mine=$("#bl-mine"),dlg=$("#bl-dlg"),body=$("#bl-dlg-body");
+  function L(p){return p[lang==="en"?1:0]}
+  function t(k){return T[lang][k]}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(m){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]})}
+  function ship(b){return b.c===st.mine?12:25}
+  function sar(n){return lang==="en"?"SAR "+n:n+" ر.س"}
+  function icon(n){return '<svg class="ic" aria-hidden="true"><use href="#i-'+n+'"/></svg>'}
+  function find(id){return BOOKS.filter(function(x){return x.id===id})[0]}
+
+  function drawCities(){
+    chips.innerHTML=["all"].concat(ORDER).map(function(c){
+      return '<button type="button" class="chip" data-city="'+c+'" aria-pressed="'+(c===st.city)+'">'+(c==="all"?t("all"):L(CITY[c]))+'</button>';
+    }).join("");
+    mine.innerHTML=ORDER.map(function(c){return '<option value="'+c+'"'+(c===st.mine?" selected":"")+'>'+L(CITY[c])+'</option>'}).join("");
+  }
+  function cover(b,tag){
+    return '<div class="cover" style="--c:var(--c'+b.col+')"><small>'+esc(L(b.k))+'</small><'+tag+'>'+esc(L(b.t))+'</'+tag+'></div>';
+  }
+  function card(b){
+    return '<article class="book">'+cover(b,"h3")+'<div class="book-in"><p class="by">'+esc(L(b.a))+'</p>'+
+      '<dl class="facts"><dt>'+t("city")+'</dt><dd>'+L(CITY[b.c])+'</dd><dt>'+t("owner")+'</dt><dd dir="ltr">'+b.s+' / 5</dd></dl>'+
+      (st.sent[b.id]?'<span class="pill">'+icon("check")+t("sent")+'</span>'
+                    :'<button type="button" class="btn btn-main" data-act="open" data-id="'+b.id+'">'+t("borrow")+'</button>')+
+      '</div></article>';
+  }
+  function draw(){
+    var q=st.q.trim().toLowerCase();
+    var res=BOOKS.filter(function(b){
+      var hay=(b.t.join(" ")+" "+b.a.join(" ")+" "+b.k.join(" ")).toLowerCase();
+      return (st.city==="all"||b.c===st.city)&&(!q||hay.indexOf(q)>-1);
+    });
+    count.textContent=t("count")+res.length;
+    if(!res.length){
+      var key=q+"|"+st.city;
+      list.innerHTML='<div class="empty"><p>'+t("none")+(q?t("noneFor")+esc(st.q.trim())+t("noneEnd"):"")+(st.city==="all"?"":t("inCity")+L(CITY[st.city]))+t("now")+'</p>'+
+        (st.wish[key]?'<span class="ok">'+t("wished")+'</span>'
+                     :'<button type="button" class="btn btn-main" data-act="wish" data-key="'+esc(key)+'">'+icon("bell")+t("wish")+'</button>')+'</div>';
+      return;
+    }
+    list.innerHTML=res.map(card).join("");
+  }
+  function openDlg(id){
+    var b=find(id), sh=ship(b);
+    body.innerHTML='<p class="eyebrow" id="dlg-title">'+t("dlg")+'</p>'+cover(b,"h3")+
+      '<dl class="facts"><dt>'+t("route")+'</dt><dd>'+L(CITY[b.c])+' '+(lang==="en"?"→":"←")+' '+L(CITY[st.mine])+'</dd>'+
+      '<dt>'+t(b.c===st.mine?"shipIn":"shipOut")+'</dt><dd>'+sar(sh)+'</dd>'+
+      '<dt>'+t("dep")+'</dt><dd>'+sar(b.d)+'</dd>'+
+      '<dt>'+t("dur")+'</dt><dd>'+t("days")+'</dd>'+
+      '<dt class="total">'+t("total")+'</dt><dd class="total">'+sar(sh+b.d)+'</dd></dl>'+
+      '<p class="note">'+icon("shield")+'<span>'+t("note")+'</span></p>'+
+      '<div class="acts"><button type="button" class="btn btn-main" data-act="confirm" data-id="'+b.id+'">'+t("confirm")+'</button>'+
+      '<button type="button" class="btn btn-quiet" data-act="close">'+t("cancel")+'</button></div>';
+    if(dlg.showModal) dlg.showModal(); else dlg.setAttribute("open","");
+  }
+  function success(id){
+    var b=find(id);
+    st.sent[id]=true; draw();
+    body.innerHTML='<span class="okmark">'+icon("check")+'</span><h3 id="dlg-title">'+t("okTitle")+'</h3>'+
+      '<p class="muted">'+esc(L(b.t))+' · '+L(CITY[b.c])+'</p><p>'+t("okSub")+'</p>'+
+      '<ol class="next">'+t("next").map(function(x){return '<li>'+x+'</li>'}).join("")+'</ol>'+
+      '<div class="acts"><button type="button" class="btn btn-main" data-act="close">'+t("done")+'</button></div>';
+    var d=body.querySelector("[data-act]"); if(d) d.focus();
+  }
+  function closeDlg(){ if(dlg.close) dlg.close(); else dlg.removeAttribute("open"); }
+
+  chips.addEventListener("click",function(e){
+    var b=e.target.closest("[data-city]"); if(!b) return;
+    st.city=b.getAttribute("data-city"); drawCities(); draw();
+    var again=chips.querySelector('[data-city="'+st.city+'"]'); if(again) again.focus();
+  });
+  list.addEventListener("click",function(e){
+    var b=e.target.closest("[data-act]"); if(!b) return;
+    if(b.getAttribute("data-act")==="open") openDlg(Number(b.getAttribute("data-id")));
+    else {st.wish[b.getAttribute("data-key")]=true; draw();}
+  });
+  dlg.addEventListener("click",function(e){
+    if(e.target===dlg){closeDlg(); return;}
+    var b=e.target.closest("[data-act]"); if(!b) return;
+    if(b.getAttribute("data-act")==="confirm") success(Number(b.getAttribute("data-id")));
+    else closeDlg();
+  });
+  $("#bl-q").addEventListener("input",function(e){st.q=e.target.value; draw();});
+  mine.addEventListener("change",function(e){st.mine=e.target.value;});
+
+  var saved=null; try{saved=localStorage.getItem("bookloop-lang")}catch(e){}
+  setLang(saved==="en"?"en":"ar",false);
+})();
+</script>
+</body>
+</html>
